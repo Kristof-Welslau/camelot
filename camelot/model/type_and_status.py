@@ -335,7 +335,7 @@ class StatusMixin( object ):
     @hybrid.hybrid_property
     def current_status( self ):
         status_history = self.get_status_history_at()
-        if status_history != None:
+        if status_history is not None:
             return status_history.classified_by
 
     @current_status.expression
