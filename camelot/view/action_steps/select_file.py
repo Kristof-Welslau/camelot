@@ -28,14 +28,13 @@
 #  ============================================================================
 import typing
 
-from camelot.admin.action import ActionStep
+from camelot.admin.action import ActionStep, State
 from camelot.core.exception import CancelRequest
 from camelot.core.utils import ugettext as _
 
 from dataclasses import dataclass, field
 
 from ...core.serializable import DataclassSerializable
-from ...core.qt import QtWidgets
 
 class SelectActionStep(ActionStep):
 
@@ -46,6 +45,13 @@ class SelectActionStep(ActionStep):
             return selected
         else:
             raise CancelRequest()
+
+@dataclass
+class FileNameFilter(DataclassSerializable):
+    verbose_name: str
+    filter: typing.List[str]
+
+all_files = FileNameFilter(verbose_name='All', filter=["*.*"])
 
 @dataclass
 class SelectFile( SelectActionStep, DataclassSerializable ):
@@ -73,10 +79,11 @@ class SelectFile( SelectActionStep, DataclassSerializable ):
     and uses it as the initial location the next time it is invoked.
     """
 
-    file_name_filter: str = ''
+    file_name_filter: typing.List[FileNameFilter] = field(default_factory=lambda:[all_files])
     single: bool = True
-
-    caption = _('Open')
+    standard_locations: typing.List[State] = field(default_factory=list)
+    caption: str = _('Open')
+    
 
 
 @dataclass
@@ -103,12 +110,11 @@ class SaveFile( SelectActionStep, DataclassSerializable ):
     # TODO FIXME: Documentation needs to be updated
 
     url: str = field(default=None)
-    file_name_filter: str = field(default=None)
+    file_name_filter: typing.List[FileNameFilter] = field(default_factory=lambda:[all_files])
     proposed_file_name: str = field(default=None)
     open_dir: bool = field(default=False)
     type: str = "url"  # "url" or "websocket"
-
-    caption = _('Save')
+    caption: str = _('Save')
 
 
 @dataclass
@@ -127,6 +133,4 @@ class SelectDirectory(SelectActionStep, DataclassSerializable):
     """
 
     directory: typing.Optional[str] = None
-    options: list = field(default_factory=lambda: [QtWidgets.QFileDialog.Option.ShowDirsOnly])
-
-    caption = _('Select directory')
+    caption: str = _('Select directory')
